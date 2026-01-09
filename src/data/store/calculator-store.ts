@@ -1,5 +1,5 @@
 import { computed, effect, inject, Injectable } from "@angular/core"
-import { combinedSetdex } from "@data/combined-movesets"
+import { combinedSetdex, resolveBasePokemonName } from "@data/combined-movesets"
 import { Items } from "@data/items"
 import { initialCalculatorState } from "@data/store/utils/initial-calculator-state"
 import { pokemonToState, stateToPokemon, stateToTargets, stateToTeam, stateToTeams, targetToState, teamToState } from "@data/store/utils/state-mapper"
@@ -465,7 +465,7 @@ export class CalculatorStore extends signalStore(
     const setEntry = combinedSetdex[pokemonName]
     const poke = setEntry?.setData
     const displayName = setEntry?.displayName ?? pokemonName
-    const baseName = setEntry?.baseName ?? pokemonName
+    const baseName = resolveBasePokemonName(displayName)
 
     this.name(pokemonId, displayName)
 
