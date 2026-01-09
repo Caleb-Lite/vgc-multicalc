@@ -114,6 +114,7 @@ export class PokemonBuildComponent {
   })
 
   pokemon = computed(() => this.store.findPokemonById(this.pokemonId()))
+  pokemonDisplayName = computed(() => this.store.displayName(this.pokemonId()))
   hasModifiedStat = computed(() => {
     return this.modifiedAtk() != this.pokemon().atk || this.modifiedDef() != this.pokemon().def || this.modifiedSpa() != this.pokemon().spa || this.modifiedSpd() != this.pokemon().spd || this.modifiedSpe() != this.pokemon().spe
   })

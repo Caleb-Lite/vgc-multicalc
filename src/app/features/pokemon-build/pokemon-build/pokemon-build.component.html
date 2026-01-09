@@ -7,7 +7,7 @@
 
       <app-input
         #pokemonInput
-        [value]="pokemon().name"
+        [value]="pokemonDisplayName()"
         (valueChange)="pokemonDataFilter.set($event)"
         [haveFocus]="pokemonHasFocus()"
         (selected)="pokemonSelectorOnClick()"
@@ -25,7 +25,7 @@
 
       <app-input
         #pokemonInput
-        [value]="pokemon().name"
+        [value]="pokemonDisplayName()"
         (valueChange)="pokemonDataFilter.set($event)"
         [haveFocus]="pokemonHasFocus()"
         (selected)="pokemonSelectorOnClick()"
