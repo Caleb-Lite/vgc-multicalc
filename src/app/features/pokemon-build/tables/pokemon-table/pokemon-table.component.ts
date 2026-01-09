@@ -1,7 +1,7 @@
 import { Component, computed, inject, input, output } from "@angular/core"
 import { ABILITY_DETAILS } from "@data/abiliity-details"
 import { selectablePokemonEntries } from "@data/combined-movesets"
-import { POKEMON_DETAILS, PokemonDetail } from "@data/pokemon-details"
+import { POKEMON_DETAILS, PokemonDetail, SpeciesData } from "@data/pokemon-details"
 import { CalculatorStore } from "@data/store/calculator-store"
 import { FilterableTableComponent } from "@features/pokemon-build/tables/filterable-table/filterable-table.component"
 import { ColumnConfig, TableData } from "@features/pokemon-build/tables/filterable-table/filtered-table-types"
@@ -66,7 +66,7 @@ export class PokemonTableComponent {
             abilities: [],
             learnset: [],
             group: "Regular"
-          } satisfies PokemonDetail)
+          } satisfies SpeciesData)
 
         const pokemon = new Pokemon(entry.baseName)
         const abilities = details.abilities.map(ability => ABILITY_DETAILS[ability].name).filter((ability): ability is string => Boolean(ability))
