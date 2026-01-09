@@ -1,6 +1,6 @@
 import { AfterViewInit, booleanAttribute, Component, computed, inject, input, output, viewChild } from "@angular/core"
 import { InputAutocompleteComponent } from "@basic/input-autocomplete/input-autocomplete.component"
-import { AllPokemon } from "@data/pokemon-details"
+import { selectablePokemonNames } from "@data/combined-movesets"
 import { CalculatorStore } from "@data/store/calculator-store"
 
 @Component({
@@ -18,11 +18,11 @@ export class PokemonComboBoxComponent implements AfterViewInit {
 
   pokemonChanged = output()
 
-  name = computed(() => this.store.findPokemonById(this.pokemonId()).name)
+  name = computed(() => this.store.displayName(this.pokemonId()))
 
   autoCompleteInput = viewChild<InputAutocompleteComponent>("autoCompleteInput")
 
-  allPokemonNames = AllPokemon.instance.allPokemonNames
+  allPokemonNames = selectablePokemonNames
 
   ngAfterViewInit() {
     if (this.autoFocus()) {

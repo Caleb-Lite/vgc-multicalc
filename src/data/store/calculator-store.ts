@@ -1,5 +1,6 @@
 import { computed, effect, inject, Injectable } from "@angular/core"
-import { SETDEX_SV } from "@data/movesets"
+import { combinedSetdex } from "@data/combined-movesets"
+import { Items } from "@data/items"
 import { initialCalculatorState } from "@data/store/utils/initial-calculator-state"
 import { pokemonToState, stateToPokemon, stateToTargets, stateToTeam, stateToTeams, targetToState, teamToState } from "@data/store/utils/state-mapper"
 import { buildUserData } from "@data/store/utils/user-data-mapper"
@@ -7,6 +8,7 @@ import { Move } from "@lib/model/move"
 import { Pokemon } from "@lib/model/pokemon"
 import { Target } from "@lib/model/target"
 import { Team } from "@lib/model/team"
+import { DEFAULT_TERA_TYPE } from "@lib/constants"
 import { MovePosition, Regulation, Stats } from "@lib/types"
 import { patchState, signalStore, withHooks, withState } from "@ngrx/signals"
 import { MenuStore } from "./menu-store"
@@ -94,6 +96,10 @@ export class CalculatorStore extends signalStore(
   readonly teams = computed(() => stateToTeams(this.teamsState(), this.teamIsAttacker()))
   readonly targets = computed(() => stateToTargets(this.targetsState(), !this.teamIsAttacker()))
   readonly attackerId = computed(() => this.team().teamMembers.find(t => t.active && t.pokemon.id != this.secondAttackerId())!.pokemon.id)
+
+  displayName(pokemonId: string) {
+    return this.findPokemonStateById(pokemonId)?.name ?? this.findPokemonById(pokemonId).name
+  }
 
   private getTeamMemberAt(index: number): Pokemon | null {
     const teamsState = this.teamsState()
@@ -420,6 +426,28 @@ export class CalculatorStore extends signalStore(
     return secondPokemonFromTargets ? stateToPokemon(secondPokemonFromTargets.secondPokemon!, !this.teamIsAttacker()) : undefined
   }
 
+  private findPokemonStateById(pokemonId: string): PokemonState | undefined {
+    if (this.speedCalcPokemonState().id == pokemonId) return this.speedCalcPokemonState()
+
+    if (this.leftPokemonState().id == pokemonId) return this.leftPokemonState()
+
+    if (this.rightPokemonState().id == pokemonId) return this.rightPokemonState()
+
+    const pokemonFromTeam = this.teamsState()
+      .find(team => team.teamMembers.some(member => member.pokemon.id === pokemonId))
+      ?.teamMembers.find(member => member.pokemon.id === pokemonId)?.pokemon
+
+    if (pokemonFromTeam) return pokemonFromTeam
+
+    const pokemonFromTargets = this.targetsState().find(target => target.pokemon.id == pokemonId)
+
+    if (pokemonFromTargets) return pokemonFromTargets.pokemon
+
+    const secondPokemonFromTargets = this.targetsState().find(target => target.secondPokemon?.id == pokemonId)
+
+    return secondPokemonFromTargets?.secondPokemon
+  }
+
   buildUserData() {
     return buildUserData(this.speedCalcPokemonState(), this.leftPokemonState(), this.rightPokemonState(), this.teamsState(), this.targetsState(), this.targetMetaRegulation())
   }
@@ -433,26 +461,34 @@ export class CalculatorStore extends signalStore(
   }
 
   loadPokemonInfo(pokemonId: string, pokemonName: string) {
-    const poke = SETDEX_SV[pokemonName]
+    const currentPokemon = this.findPokemonById(pokemonId)
+    const setEntry = combinedSetdex[pokemonName]
+    const poke = setEntry?.setData
+    const displayName = setEntry?.displayName ?? pokemonName
+    const baseName = setEntry?.baseName ?? pokemonName
+
+    this.name(pokemonId, displayName)
 
     if (poke) {
-      this.name(pokemonId, pokemonName)
-      this.nature(pokemonId, poke?.nature)
-      this.item(pokemonId, poke.items[0])
-      this.ability(pokemonId, poke.ability)
-      this.teraType(pokemonId, poke.teraType)
+      const moves = poke.moves ?? []
+      const fallbackMove = (index: number) => moves[index] ?? "Struggle"
+
+      this.nature(pokemonId, poke.nature ?? currentPokemon.nature)
+      this.item(pokemonId, poke.items?.[0] ?? Items.instance.withoutItem())
+      this.ability(pokemonId, poke.ability ?? currentPokemon.ability.name)
+      this.teraType(pokemonId, poke.teraType ?? DEFAULT_TERA_TYPE)
       this.teraTypeActive(pokemonId, false)
-      this.evs(pokemonId, poke.evs)
-      this.moveOne(pokemonId, poke.moves[0])
-      this.moveTwo(pokemonId, poke.moves[1])
-      this.moveThree(pokemonId, poke.moves[2])
-      this.moveFour(pokemonId, poke.moves[3])
+      this.evs(pokemonId, poke.evs ?? { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 })
+      this.moveOne(pokemonId, fallbackMove(0))
+      this.moveTwo(pokemonId, fallbackMove(1))
+      this.moveThree(pokemonId, fallbackMove(2))
+      this.moveFour(pokemonId, fallbackMove(3))
       this.activateMoveByPosition(pokemonId, 1)
     }
 
     this.commander(pokemonId, false)
     this.hpPercentage(pokemonId, 100)
-    this.adjustBoosts(pokemonId, pokemonName)
+    this.adjustBoosts(pokemonId, baseName)
   }
 
   private adjustBoosts(pokemonId: string, pokemonName: string) {

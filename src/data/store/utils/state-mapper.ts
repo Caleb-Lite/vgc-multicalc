@@ -1,3 +1,4 @@
+import { combinedSetdex } from "@data/combined-movesets"
 import { PokemonState, TargetState, TeamState } from "@data/store/calculator-store"
 import { Ability } from "@lib/model/ability"
 import { Move } from "@lib/model/move"
@@ -10,13 +11,14 @@ import { TeamMember } from "@lib/model/team-member"
 import { MovePosition } from "@lib/types"
 
 export function stateToPokemon(state: PokemonState, isAttacker = false): Pokemon {
+  const baseName = combinedSetdex[state.name]?.baseName ?? state.name
   const moveOne = new Move(state.moveSet[0].name, { alliesFainted: state.moveSet[0].alliesFainted, hits: state.moveSet[0].hits })
   const moveTwo = new Move(state.moveSet[1].name, { alliesFainted: state.moveSet[1].alliesFainted, hits: state.moveSet[1].hits })
   const moveThree = new Move(state.moveSet[2].name, { alliesFainted: state.moveSet[2].alliesFainted, hits: state.moveSet[2].hits })
   const moveFour = new Move(state.moveSet[3].name, { alliesFainted: state.moveSet[3].alliesFainted, hits: state.moveSet[3].hits })
   const activeMovePosition = ([moveOne, moveTwo, moveThree, moveFour].findIndex(move => move.name == state.activeMove) + 1) as MovePosition
 
-  return new Pokemon(state.name, {
+  return new Pokemon(baseName, {
     id: state.id,
     nature: state.nature,
     item: state.item,
