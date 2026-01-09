@@ -59,10 +59,14 @@ export class PokemonTableComponent {
 
     const allPokemon = selectablePokemonEntries
       .map(entry => {
-        const details = detailsByName.get(entry.baseName)
-        if (!details) {
-          return null
-        }
+        const details =
+          detailsByName.get(entry.baseName) ??
+          ({
+            name: entry.baseName,
+            abilities: [],
+            learnset: [],
+            group: "Regular"
+          } satisfies PokemonDetail)
 
         const pokemon = new Pokemon(entry.baseName)
         const abilities = details.abilities.map(ability => ABILITY_DETAILS[ability].name).filter((ability): ability is string => Boolean(ability))
@@ -82,7 +86,6 @@ export class PokemonTableComponent {
           group: details.group
         } as PokemonTableEntry
       })
-      .filter((entry): entry is PokemonTableEntry => entry !== null)
 
     const groupedData = allPokemon.reduce(
       (acc, pokemon) => {

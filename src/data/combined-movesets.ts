@@ -61,8 +61,17 @@ const addTrainerEntries = (trainerSetdex: TrainerSetdex) => {
   })
 }
 
+const stripTrainerSuffix = (pokemonName: string) => {
+  const trainerSuffixMatch = pokemonName.match(/^(.*)\s+\([^()]+\)$/)
+  return trainerSuffixMatch ? trainerSuffixMatch[1] : pokemonName
+}
+
+const resolveBasePokemonName = (pokemonName: string) => {
+  return combinedSetdex[pokemonName]?.baseName ?? stripTrainerSuffix(pokemonName)
+}
+
 addVgcEntries(Object.entries(VGC_SETDEX))
 addTrainerEntries(NORMAL_SETDEX)
 addTrainerEntries(HARDCORE_SETDEX)
 
-export { combinedSetdex, selectablePokemonEntries, selectablePokemonNames }
+export { combinedSetdex, resolveBasePokemonName, selectablePokemonEntries, selectablePokemonNames }
